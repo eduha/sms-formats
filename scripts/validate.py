@@ -26,15 +26,29 @@ from sms_format_repository import (
 
 
 def _is_format_file_path(file_path):
+    """Check if file is a valid format file path (in /formats/ with .txt extension)."""
     return str(file_path).endswith(".txt") and "/formats/" in str(file_path)
 
 def _check_file_extensions(src_dir: Path) -> list[ValidationError]:
-    """Check for files with invalid extensions in src/ directory structure."""
+    """
+    Check for files with invalid extensions/names in src/ directory structure.
+    Rules:
+    - In /formats/: only *.txt allowed
+    - In bank root (src/Bank_X/): only senders.txt allowed
+    - Any other files: error
+    """
     errors = []
     
     for file_path in src_dir.rglob("*"):
-        if file_path.is_file():
-            if not str(file_path).endswith(".txt"):
+        if not file_path.is_file():
+            continue
+        
+        path_str = str(file_path)
+        parts = file_path.parts
+        
+        # Check if file is in a /formats/ directory
+        if "/formats/" in path_str:
+            if not path_str.endswith(".txt"):
                 errors.append(
                     ValidationError(
                         kind="invalid_extension",
@@ -42,6 +56,34 @@ def _check_file_extensions(src_dir: Path) -> list[ValidationError]:
                         message="Invalid file extension (only .txt allowed)",
                     )
                 )
+        else:
+            # File is not in /formats/, check if it's in bank root
+            # Bank root is direct child of src/
+            if "src" in parts:
+                src_idx = parts.index("src")
+                # Check if file is directly in src/Bank_XXX/ (not in subdirs except formats)
+                if src_idx + 2 < len(parts):
+                    # File is in a subdirectory other than /formats/
+                    subdir = parts[src_idx + 2]
+                    if subdir != "formats":
+                        errors.append(
+                            ValidationError(
+                                kind="invalid_file",
+                                file_path=str(file_path),
+                                message="Invalid file (only senders.txt allowed in bank root)",
+                            )
+                        )
+                elif src_idx + 1 < len(parts):
+                    # File is in bank root (src/Bank_XXX/filename)
+                    filename = file_path.name
+                    if filename != "senders.txt":
+                        errors.append(
+                            ValidationError(
+                                kind="invalid_file",
+                                file_path=str(file_path),
+                                message="Invalid file (only senders.txt allowed in bank root)",
+                            )
+                        )
     
     return errors
 
@@ -97,8 +139,10 @@ def _collect_validation_errors():
     """Full pass over all banks and format files."""
     errors = []
     src_dir = get_src_dir()
-        # Проверка расширений файлов (НОВОЕ)
+    
+    # Проверка расширений и имён файлов (НОВОЕ)
     errors.extend(_check_file_extensions(src_dir))
+    
     companies = list_companies()
 
     for company in companies:
