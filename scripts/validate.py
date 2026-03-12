@@ -141,7 +141,9 @@ def _collect_validation_errors():
     companies = list_companies()
     for company in companies:
         bank_dir_name = (
-            f"{company.name}_{company.id}" if company.id is not None else company.name
+            f"{company.name}_{company.id}"
+            if company.id is not None
+            else company.name
         )
         bank_path = src_dir / bank_dir_name
         bank_name = company.name
@@ -205,7 +207,10 @@ def _apply_validation_fixes(errors):
             to_delete.add(err.file_path)
         elif err.kind in ("invalid_extension", "invalid_file"):  # НОВОЕ
             to_delete.add(err.file_path)
-        elif err.kind in ("example_no_match", "cross_match") and err.example_text is not None:
+        elif (
+            err.kind in ("example_no_match", "cross_match")
+            and err.example_text is not None
+        ):
             to_remove_examples.setdefault(err.file_path, set()).add(err.example_text)
         elif err.kind == "invalid_name" and err.expected_name:
             if _is_format_file_path(err.file_path):
@@ -225,7 +230,8 @@ def _apply_validation_fixes(errors):
                 bank_renames.append((err.file_path, err.expected_name))
     format_renames = list(format_rename_target.items())
     for file_path in to_delete:
-        # Delete by exact path to avoid ambiguities when duplicate ids/names exist.
+        # Delete by exact path to avoid ambiguities when duplicate ids/names
+        # exist.
         path_obj = Path(file_path)
         if path_obj.exists():
             path_obj.unlink()
@@ -241,7 +247,8 @@ def _apply_validation_fixes(errors):
             continue
         kept = [ex for ex in parsed.examples if ex not in remove_set]
         if not kept:
-            # Delete exact file instead of name/id lookup (can be ambiguous during renames/fixes).
+            # Delete exact file instead of name/id lookup (can be ambiguous
+            # during renames/fixes).
             path_obj = Path(file_path)
             if path_obj.exists():
                 path_obj.unlink()
