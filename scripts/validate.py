@@ -28,6 +28,22 @@ from sms_format_repository import (
 def _is_format_file_path(file_path):
     return str(file_path).endswith(".txt") and "/formats/" in str(file_path)
 
+def _check_file_extensions(src_dir: Path) -> list[ValidationError]:
+    """Check for files with invalid extensions in src/ directory structure."""
+    errors = []
+    
+    for file_path in src_dir.rglob("*"):
+        if file_path.is_file():
+            if not str(file_path).endswith(".txt"):
+                errors.append(
+                    ValidationError(
+                        kind="invalid_extension",
+                        file_path=str(file_path),
+                        message="Invalid file extension (only .txt allowed)",
+                    )
+                )
+    
+    return errors
 
 def _relative_path(path, base=None):
     """Path relative to base (default cwd) for shorter output."""
@@ -81,6 +97,8 @@ def _collect_validation_errors():
     """Full pass over all banks and format files."""
     errors = []
     src_dir = get_src_dir()
+        # Проверка расширений файлов (НОВОЕ)
+    errors.extend(_check_file_extensions(src_dir))
     companies = list_companies()
 
     for company in companies:
