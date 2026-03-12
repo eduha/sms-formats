@@ -23,11 +23,9 @@ from sms_format_repository import (
     save_format,
 )
 
-
 def _is_format_file_path(file_path):
     """Check if file is a valid format file path (in /formats/ with .txt extension)."""
     return str(file_path).endswith(".txt") and "/formats/" in str(file_path)
-
 
 def _check_file_extensions(src_dir: Path) -> list[ValidationError]:
     """
@@ -83,7 +81,6 @@ def _check_file_extensions(src_dir: Path) -> list[ValidationError]:
                         )
     return errors
 
-
 def _relative_path(path, base=None):
     """Path relative to base (default cwd) for shorter output."""
     base = base or Path.cwd()
@@ -92,14 +89,12 @@ def _relative_path(path, base=None):
     except ValueError:
         return path
 
-
 def _format_error_line(err: ValidationError, base=None) -> str:
     """Single line for stderr from a ValidationError (path: message style)."""
     path = _relative_path(err.file_path, base) if err.file_path else ""
     if path and not err.message.startswith(str(path)):
         return f"{path}: {err.message}"
     return err.message
-
 
 def _print_errors(errors, src_dir, stream):
     """Print errors in test-runner style: header, one line per error, summary."""
@@ -114,7 +109,6 @@ def _print_errors(errors, src_dir, stream):
     stream.write("=" * 60 + "\n")
     stream.write(f"{len(errors)} error(s) in {files_with_errors} file(s)\n")
 
-
 def _company_id_from_path(file_path: str):
     parts = Path(file_path).parts
     if "src" not in parts:
@@ -125,12 +119,10 @@ def _company_id_from_path(file_path: str):
     company_dir = parts[idx + 1]
     return parse_name_with_id(company_dir)["id"]
 
-
 def _format_name_and_id_from_path(file_path: str):
     stem = Path(file_path).stem
     parsed = parse_name_with_id(stem)
     return parsed["name"], parsed["id"], stem
-
 
 def _collect_validation_errors():
     """Full pass over all banks and format files."""
@@ -190,13 +182,10 @@ def _collect_validation_errors():
         errors.extend(validate_cross_match(formats_with_regex))
     return errors
 
-
 def _apply_validation_fixes(errors):
-    """
-    Apply fixable corrections: delete invalid_format files; remove example_no_match and
+    """Apply fixable corrections: delete invalid_format files; remove example_no_match and
     cross_match examples; rename format files and bank dirs for invalid_name.
-    Bank renames are done last so format paths stay valid.
-    """
+    Bank renames are done last so format paths stay valid."""
     to_delete = set()
     to_remove_examples = {}
     format_renames = []
@@ -210,7 +199,7 @@ def _apply_validation_fixes(errors):
         elif (
             err.kind in ("example_no_match", "cross_match")
             and err.example_text is not None
-        ):
+        ):  
             to_remove_examples.setdefault(err.file_path, set()).add(err.example_text)
         elif err.kind == "invalid_name" and err.expected_name:
             if _is_format_file_path(err.file_path):
@@ -239,7 +228,7 @@ def _apply_validation_fixes(errors):
         if file_path in to_delete:
             continue
         company_id = _company_id_from_path(file_path)
-        format_name, format_id, old_stem = _format_name_and_id_from_path(file_path)
+        format_name, _, old_stem = _format_name_and_id_from_path(file_path)
         if company_id is None:
             continue
         parsed = find_format_by_name(format_name, str(company_id))
@@ -269,7 +258,7 @@ def _apply_validation_fixes(errors):
         company_id = _company_id_from_path(old_path)
         if company_id is None:
             continue
-        old_name, _old_id, _old_stem = _format_name_and_id_from_path(old_path)
+        old_name, _, _ = _format_name_and_id_from_path(old_path)
         new_stem = Path(new_path).stem
         parsed = find_format_by_name(old_name, str(company_id))
         if not parsed:
@@ -284,7 +273,6 @@ def _apply_validation_fixes(errors):
             continue
         save_company(Company(id=str(company_id), name=expected_name))
 
-
 def validate(fix: bool = False) -> list[ValidationError]:
     """Validate repository formats and optionally apply auto-fixes."""
     errors = _collect_validation_errors()
@@ -292,7 +280,6 @@ def validate(fix: bool = False) -> list[ValidationError]:
         _apply_validation_fixes(errors)
         errors = _collect_validation_errors()
     return errors
-
 
 def main():
     parser = argparse.ArgumentParser(description="Validate SMS format files.")
