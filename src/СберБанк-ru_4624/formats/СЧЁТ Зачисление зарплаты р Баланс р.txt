@@ -1,7 +1,0 @@
-СЧЁТ(\d{4})\s+\d{2}:\d{2}\s+(.+?)\s+(\d[\d\s.,]*)([^\s\d]+)\s+Баланс:\s+(-?\d[\d\s.,]*)([^\s\d]+)
-
------COLUMNS-----
-syncid;comment;income;instrument;balance;acc_instrument
-
------EXAMPLE-----
-СЧЁТ9772 09:12 Зачисление зарплаты 59р  Баланс: 9841р

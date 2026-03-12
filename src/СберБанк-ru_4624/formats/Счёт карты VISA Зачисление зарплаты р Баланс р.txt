@@ -1,7 +1,0 @@
-Счёт карты\s+\S*?(\d{4})\s+\d{2}:\d{2}\s+(.*?)\s+(\d[\d\s.,]*)\s*(\S+)\s+Баланс:\s+(-?\d[\d\s.,]*[.,]\d{2})(\S+)
-
------COLUMNS-----
-syncid;comment;income;instrument;balance;acc_instrument
-
------EXAMPLE-----
-Счёт карты VISA3894 13:43 Зачисление зарплаты 31 320р  Баланс: 94 337.37р
