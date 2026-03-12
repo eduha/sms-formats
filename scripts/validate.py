@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """Validate format files: names, columns, regex match, group count, no cross-match."""
-
 import argparse
 import sys
 from pathlib import Path
@@ -29,6 +28,7 @@ def _is_format_file_path(file_path):
     """Check if file is a valid format file path (in /formats/ with .txt extension)."""
     return str(file_path).endswith(".txt") and "/formats/" in str(file_path)
 
+
 def _check_file_extensions(src_dir: Path) -> list[ValidationError]:
     """
     Check for files with invalid extensions/names in src/ directory structure.
@@ -38,14 +38,11 @@ def _check_file_extensions(src_dir: Path) -> list[ValidationError]:
     - Any other files: error
     """
     errors = []
-    
     for file_path in src_dir.rglob("*"):
         if not file_path.is_file():
             continue
-        
         path_str = str(file_path)
         parts = file_path.parts
-        
         # Check if file is in a /formats/ directory
         if "/formats/" in path_str:
             if not path_str.endswith(".txt"):
@@ -84,8 +81,8 @@ def _check_file_extensions(src_dir: Path) -> list[ValidationError]:
                                 message="Invalid file (only senders.txt allowed in bank root)",
                             )
                         )
-    
     return errors
+
 
 def _relative_path(path, base=None):
     """Path relative to base (default cwd) for shorter output."""
@@ -139,17 +136,15 @@ def _collect_validation_errors():
     """Full pass over all banks and format files."""
     errors = []
     src_dir = get_src_dir()
-    
     # Проверка расширений и имён файлов (НОВОЕ)
     errors.extend(_check_file_extensions(src_dir))
-    
     companies = list_companies()
-
     for company in companies:
-        bank_dir_name = f"{company.name}_{company.id}" if company.id is not None else company.name
+        bank_dir_name = (
+            f"{company.name}_{company.id}" if company.id is not None else company.name
+        )
         bank_path = src_dir / bank_dir_name
         bank_name = company.name
-
         if bank_name != clean_name(bank_name):
             errors.append(
                 ValidationError(
@@ -159,12 +154,10 @@ def _collect_validation_errors():
                     expected_name=clean_name(bank_name),
                 )
             )
-
         format_records, parse_errors = list_formats_with_files_and_errors(company.id)
         errors.extend(parse_errors)
         if not format_records:
             continue
-
         formats = []
         formats_with_regex = []
         for parsed, file_path in format_records:
@@ -183,7 +176,6 @@ def _collect_validation_errors():
                         message="Invalid format file",
                     )
                 )
-
         for file_path, format_name, parsed, compiled in formats:
             errors.extend(
                 validate_sms_format(
@@ -193,9 +185,7 @@ def _collect_validation_errors():
                     compiled_regex=compiled,
                 )
             )
-
         errors.extend(validate_cross_match(formats_with_regex))
-
     return errors
 
 
@@ -209,11 +199,11 @@ def _apply_validation_fixes(errors):
     to_remove_examples = {}
     format_renames = []
     bank_renames = []
-
     format_rename_target = {}
-
     for err in errors:
         if err.kind == "invalid_format":
+            to_delete.add(err.file_path)
+        elif err.kind in ("invalid_extension", "invalid_file"):  # НОВОЕ
             to_delete.add(err.file_path)
         elif err.kind in ("example_no_match", "cross_match") and err.example_text is not None:
             to_remove_examples.setdefault(err.file_path, set()).add(err.example_text)
@@ -224,22 +214,21 @@ def _apply_validation_fixes(errors):
                 parsed = parse_name_with_id(stem)
                 id_part = parsed["id"]
                 new_stem = (
-                    f"{err.expected_name}_{id_part}" if id_part is not None else err.expected_name
+                    f"{err.expected_name}_{id_part}"
+                    if id_part is not None
+                    else err.expected_name
                 )
                 new_path = path.parent / f"{new_stem}.txt"
                 if str(new_path) != err.file_path:
                     format_rename_target[err.file_path] = str(new_path)
             else:
                 bank_renames.append((err.file_path, err.expected_name))
-
     format_renames = list(format_rename_target.items())
-
     for file_path in to_delete:
         # Delete by exact path to avoid ambiguities when duplicate ids/names exist.
         path_obj = Path(file_path)
         if path_obj.exists():
             path_obj.unlink()
-
     for file_path, remove_set in to_remove_examples.items():
         if file_path in to_delete:
             continue
@@ -267,7 +256,6 @@ def _apply_validation_fixes(errors):
                 changed=parsed.changed,
             )
             save_format(updated, str(company_id), file_stem=old_stem)
-
     for old_path, new_path in format_renames:
         if old_path == new_path:
             continue
@@ -283,7 +271,6 @@ def _apply_validation_fixes(errors):
         old_file = Path(old_path)
         if old_file.exists():
             old_file.unlink()
-
     for bank_path_str, expected_name in bank_renames:
         company_id = parse_name_with_id(Path(bank_path_str).name)["id"]
         if company_id is None:
@@ -312,23 +299,18 @@ def main():
         ),
     )
     args = parser.parse_args()
-
     src_dir = get_src_dir()
     if not src_dir.exists():
         sys.stderr.write("No src/ directory found.\n")
         sys.exit(1)
-
     companies = list_companies()
     if not companies:
         sys.stderr.write("No banks found in src/\n")
         sys.exit(1)
-
     errors = validate(fix=args.fix)
-
     if errors:
         _print_errors(errors, src_dir, sys.stderr)
         sys.exit(1)
-
     sys.stdout.write("Validation OK\n")
 
 
