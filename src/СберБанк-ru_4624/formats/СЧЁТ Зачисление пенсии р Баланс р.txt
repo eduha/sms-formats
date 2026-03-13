@@ -1,0 +1,7 @@
+СЧЁТ(\d+)\s+\d{2}:\d{2}\s+(.+?)\s+(\d[\d\u00A0\s.,]*[.,]\d{2})([^\s]+)\s+Баланс:\s+(\d[\d\u00A0\s.,]*[.,]\d{2})([^\s]+)
+
+-----COLUMNS-----
+syncid;comment;income;instrument;balance;acc_instrument
+
+-----EXAMPLE-----
+СЧЁТ7738 05:38 Зачисление пенсии 9000.64р  Баланс: 137 504.94р
