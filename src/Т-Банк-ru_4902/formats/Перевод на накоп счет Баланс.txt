@@ -1,7 +1,7 @@
-Перевод\s+на\s+(\d[\d\s.,]*)\s*(\S+)\s*,\s*(.+?)\s*Баланс\s+(-?\d[\d\s.,]*[.,]\d{2})\s*(\S+)
+Перевод на\s+(\d[\d\s.,]*[.,]\d{2})\s*(\S+)\s*,\s*накоп\. счет\.\s+Баланс\s+(\d[\d\s.,]*)\s*(\S+)
 
 -----COLUMNS-----
-outcome;instrument;comment;balance;acc_instrument
+outcome;instrument;balance;acc_instrument
 
 -----EXAMPLE-----
-Перевод на 237 ₽, накоп. счет. Баланс 1 869,87 ₽ ║
+Перевод на 746,52 ₽, накоп. счет. Баланс 80 000 ₽ ║
