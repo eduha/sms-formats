@@ -1,0 +1,7 @@
+Счёт карты MIR-(\d+)\s+\d{2}:\d{2}\s+Покупка\s+(\d[\d\s.,]*)([^\d\s]+)\s+(.+)
+
+-----COLUMNS-----
+syncid;outcome;instrument;payee
+
+-----EXAMPLE-----
+Счёт карты MIR-0012 02:57 Покупка 149р COFFEE HOUSE
