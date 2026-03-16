@@ -1,0 +1,7 @@
+СЧЁТ(\d{4})\s+\d{2}:\d{2}\s+перевод\s+(\d[\d\s.,]*)(\S+)\s+(.+)$
+
+-----COLUMNS-----
+syncid;outcome;instrument;payee
+
+-----EXAMPLE-----
+СЧЁТ0912 08:23 перевод 1000р OZON
