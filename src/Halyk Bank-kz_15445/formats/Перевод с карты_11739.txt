@@ -1,7 +1,13 @@
-Перевод\s+(\d[\d\s.,]*)\s+(\S+)\s+с карты\s+\*(\d{4})
+(?:Перевод|Perevod)\s+(\d[\d\s.,]*\d|\d)\s*(\S+)\s+(?:с карты|s karty)\s+\*(\d{4})(?!.*(?:Ostatok|Доступно|Баланс))
 
 -----COLUMNS-----
 outcome;instrument;syncid
 
 -----EXAMPLE-----
 10:50 Перевод 350 000 ₸ с карты *6477 ║
+
+-----EXAMPLE-----
+11:44 Perevod 2200.00₸ s karty *5143. ║
+
+-----EXAMPLE-----
+13:06 Perevod 26200.00KZT s karty *2416. ║
